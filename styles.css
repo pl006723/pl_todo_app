@@ -1,0 +1,321 @@
+/* ---------- CSS Variables ---------- */
+:root {
+  --bg: #121212;
+  --surface: #1e1e1e;
+  --primary: #bb86fc;
+  --text: #e1e1e1;
+  --sub: #888;
+}
+
+/* ---------- Global / Reset ---------- */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", Roboto, Helvetica, sans-serif;
+
+
+  
+}
+
+/* ---------- Header ---------- */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--surface);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+header #greet {
+  font-size: 1.2rem;
+}
+
+.spacer {
+  flex: 1;
+}
+
+header button#btnOut {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: var(--primary);
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  width: auto;
+}
+
+/* ---------- Main Content ---------- */
+main {
+  padding: 80px 20px 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* ---------- Login section ---------- */
+
+section {
+  margin: 0;
+  padding: 60px 20px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", Roboto, Helvetica, sans-serif;
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------- Card Containers ---------- */
+.card {
+  width: 100%;
+  max-width: 500px;
+  padding: 20px;
+  background: var(--surface);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.add-card {
+  padding: 20px;
+}
+
+.list-card {
+  padding: 20px;
+}
+
+/* ---------- Typography ---------- */
+h1 {
+  margin: 0 0 25px;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+/* ---------- Form Controls ---------- */
+.add-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%; /* Ensure it respects the card's width */
+}
+
+#newTask, #taskDescription, #taskPriority {
+  width: 100%; /* Full width within container */
+  max-width: 100%; /* Prevent overflow */
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #2c2c2c;
+  color: var(--text);
+  font-size: 1rem;
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+#taskDescription {
+  resize: vertical;
+  min-height: 80px;
+  max-height: 200px; /* Limit max height for better control */
+}
+
+#taskPriority {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: #2c2c2c url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="%23888" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center;
+  cursor: pointer;
+}
+
+#newTask::placeholder,
+#taskDescription::placeholder {
+  color: var(--sub);
+}
+
+button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background: var(--primary);
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  width: auto; /* Allow button to size naturally */
+  align-self: flex-start; /* Align to start to avoid stretching */
+}
+
+/* ---------- Task List ---------- */
+ul {
+  margin: 0;
+  padding: 2px 0 0;
+  list-style: none;
+}
+
+li {
+  display: block;
+  padding: 10px 0;
+  border-bottom: 1px solid #333;
+}
+
+li:last-child {
+  border-bottom: none;
+}
+
+li.completed .task-text {
+  color: var(--sub);
+  text-decoration: line-through;
+}
+
+.task-card {
+  background: #1E1E1E;
+  border-radius: 6px;
+  padding: 0px;
+  margin-bottom: 8px;
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.task-description {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #2c2c2c;
+  color: var(--text);
+  font-size: 1rem;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 80px;
+  max-height: 200px; /* Limit max height for better control */
+}
+
+.task-description:empty {
+  display: none;
+}
+
+.task-priority-wrapper {
+  width: 100%;
+}
+
+.task-priority {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #2c2c2c;
+  color: var(--text);
+  font-size: 1rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: #2c2c2c url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="%23888" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center;
+  display: block;
+  box-sizing: border-box;
+}
+
+.task-priority::before {
+  content: "Priority: ";
+  color: var(--sub);
+}
+
+li input[type="checkbox"] {
+  margin-right: 12px;
+  accent-color: var(--primary);
+}
+
+.task-text {
+  flex: 1;
+}
+
+.delete {
+  margin-left: auto;
+  color: var(--sub);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.delete:hover {
+  color: #f55;
+}
+
+/* ---------- auth-only overrides ---------- */
+body.auth {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 7vh;
+  margin: 0;
+}
+
+.card.auth {
+  width: 90%;
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.card.auth.login {
+  width: 600px;
+  height: 600px;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.card.auth h1 {
+  width: 100%;
+  text-align: center;
+  margin: 0 0 10px;
+}
+
+.card.auth form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card.auth input,
+.card.auth button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+}
+
+.card.auth.login input,
+.card.auth.login button {
+
+  width: 60%;
+  padding: 10px;
+  margin-left: 100px;
+  border: none;
+  border-radius: 6px;
+}
+
+.card.auth button {
+  margin-top: 6px;
+  background: var(--primary);
+  color: #000;
+  font-weight: 600;
+}
+
+.card.auth p {
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
