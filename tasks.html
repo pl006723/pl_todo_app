@@ -40,7 +40,7 @@
 
 <script>
 /* =========================================================
-  Plain-JS CRUD
+  Plain-JS CRUD - Päivitetty muokkaustoiminnoilla
    ========================================================= */
 
 const api = function(action, payload) {
@@ -60,34 +60,35 @@ const api = function(action, payload) {
     });
 };
 
-/* ----------  page ready  ---------- */
+/* ----------  Sivun alustus  ---------- */
 document.addEventListener('DOMContentLoaded', function(){
     checkLogin();
 });
 
 function checkLogin(){
     api('whoami').then(function(user){
-        if (user.guest){                // not authenticated
+        if (user.guest){                // Ei kirjautunut
             location.href = 'index.html';
             return;
         }
         document.getElementById('greet').textContent = 'Hello, ' + user.username;
-        loadTaskList();                 // pull tasks
+        loadTaskList();                 // Haetaan tehtävät
     });
 }
 
-/* ----------  logout  ---------- */
+/* ----------  Kirjaudu ulos  ---------- */
 document.getElementById('btnOut').onclick = function(){
     api('logout').then(function(){
         location.href = 'index.html';
     });
 };
 
-/* ----------  READ  ---------- */
+/* ----------  READ (Haku ja listan rakennus)  ---------- */
 function loadTaskList(){
     api('read').then(function(taskArray){
         var taskList = document.getElementById('taskList');
-        taskList.innerHTML = ''; // Clear existing list
+        taskList.innerHTML = ''; // Tyhjennetään lista
+        
         for (var idx = 0; idx < taskArray.length; idx++) {
             var taskObj = taskArray[idx];
             var taskId = taskObj.id;
@@ -95,71 +96,148 @@ function loadTaskList(){
             var taskDescription = taskObj.description ? escapeHtml(taskObj.description) : '';
             var taskPriority = taskObj.priority ? escapeHtml(taskObj.priority) : 'medium';
 
-            // Create li element
+            // Luodaan li-elementti
             var li = document.createElement('li');
             li.id = 'row-' + taskId;
             if (taskObj.completed) li.classList.add('completed');
 
-            // Create task-card div
+            // Luodaan task-card div
             var taskCard = document.createElement('div');
             taskCard.classList.add('task-card');
 
-            // Create task-header div
+            // --- HEADER (Checkbox, Nimi/Input, Edit, Delete) ---
             var taskHeader = document.createElement('div');
             taskHeader.classList.add('task-header');
 
-            // Create checkbox
             var checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             if (taskObj.completed) checkbox.checked = true;
             checkbox.setAttribute('onchange', 'toggleTaskCompletion(' + taskId + ', this.checked)');
 
-            // Create task-text span
+            // Tehtävän nimi (normaalitila)
             var taskTextSpan = document.createElement('span');
             taskTextSpan.classList.add('task-text');
             taskTextSpan.textContent = taskText;
 
-            // Create delete span
+            // Muokkauspainike (Kynä)
+            var editBtn = document.createElement('button');
+            editBtn.textContent = '✎';
+            editBtn.classList.add('edit-btn');
+            editBtn.onclick = (function(id) {
+                return function() { toggleEditMode(id); };
+            })(taskId);
+
             var deleteSpan = document.createElement('span');
             deleteSpan.classList.add('delete');
             deleteSpan.setAttribute('onclick', 'deleteTaskById(' + taskId + ')');
             deleteSpan.textContent = '✗';
 
-            // Append header elements
             taskHeader.appendChild(checkbox);
             taskHeader.appendChild(taskTextSpan);
+            taskHeader.appendChild(editBtn);
             taskHeader.appendChild(deleteSpan);
 
-            // Create task-description textarea if description exists
-            if (taskDescription) {
-                var descriptionTextarea = document.createElement('textarea');
-                descriptionTextarea.classList.add('task-description');
-                descriptionTextarea.readOnly = true;
-                descriptionTextarea.textContent = taskDescription;
-            }
+            // --- MUOKKAUSKENTÄT (Piilossa oletuksena) ---
+            
+            // Nimen muokkaus-input
+            var nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.value = taskObj.task;
+            nameInput.classList.add('edit-name');
+            nameInput.style.display = 'none';
 
-            // Create task-priority wrapper and p
+            // Kuvaus (textarea)
+            var descriptionTextarea = document.createElement('textarea');
+            descriptionTextarea.classList.add('task-description');
+            descriptionTextarea.readOnly = true; 
+            descriptionTextarea.textContent = taskObj.description || '';
+
+            // Prioriteetin muokkaus (select)
+            var prioritySelect = document.createElement('select');
+            prioritySelect.classList.add('edit-priority');
+            prioritySelect.style.display = 'none';
+            ['low', 'medium', 'high'].forEach(function(p) {
+                var opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p.charAt(0).toUpperCase() + p.slice(1);
+                if(p === taskObj.priority) opt.selected = true;
+                prioritySelect.appendChild(opt);
+            });
+
+            // Prioriteetin näyttö (normaalitila)
             var priorityWrapper = document.createElement('div');
             priorityWrapper.classList.add('task-priority-wrapper');
             var priorityP = document.createElement('p');
             priorityP.classList.add('task-priority');
             priorityP.textContent = taskPriority.charAt(0).toUpperCase() + taskPriority.slice(1);
-
-            // Append priority elements
             priorityWrapper.appendChild(priorityP);
 
-            // Append all to task-card
+            // Tallenna-painike
+            var saveBtn = document.createElement('button');
+            saveBtn.textContent = 'Save';
+            saveBtn.classList.add('save-btn');
+            saveBtn.style.display = 'none';
+            saveBtn.onclick = (function(id) {
+                return function() { saveTaskEdits(id); };
+            })(taskId);
+
+            // Kootaan kortti
             taskCard.appendChild(taskHeader);
-            if (descriptionTextarea) taskCard.appendChild(descriptionTextarea);
+            taskCard.appendChild(nameInput);
+            taskCard.appendChild(descriptionTextarea);
+            taskCard.appendChild(prioritySelect);
             taskCard.appendChild(priorityWrapper);
+            taskCard.appendChild(saveBtn);
 
-            // Append to li
             li.appendChild(taskCard);
-
-            // Append li to taskList
             taskList.appendChild(li);
         }
-        console.log('Task list DOM updated:', taskList.innerHTML); // Debug log
+    });
+}
+
+/* ----------  MUOKKAUSTILAN VAIHTO  ---------- */
+function toggleEditMode(taskId) {
+    var row = document.getElementById('row-' + taskId);
+    var desc = row.querySelector('.task-description');
+    var nameInput = row.querySelector('.edit-name');
+    var nameSpan = row.querySelector('.task-text');
+    var prioSelect = row.querySelector('.edit-priority');
+    var prioWrapper = row.querySelector('.task-priority-wrapper');
+    var saveBtn = row.querySelector('.save-btn');
+    var editBtn = row.querySelector('.edit-btn');
+
+    var isEditing = desc.readOnly; // Jos readOnly on true, ollaan siirtymässä muokkaukseen
+    
+    desc.readOnly = !isEditing;
+    desc.classList.toggle('editing');
+    
+    nameInput.style.display = isEditing ? 'block' : 'none';
+    nameSpan.style.display = isEditing ? 'none' : 'block';
+    prioSelect.style.display = isEditing ? 'block' : 'none';
+    prioWrapper.style.display = isEditing ? 'none' : 'block';
+    saveBtn.style.display = isEditing ? 'inline-block' : 'none';
+    
+    editBtn.textContent = isEditing ? '✕' : '✎'; // Peruuta-merkki tai kynä
+}
+
+/* ----------  TALLENNUS  ---------- */
+function saveTaskEdits(taskId) {
+    var row = document.getElementById('row-' + taskId);
+    var newTaskName = row.querySelector('.edit-name').value;
+    var newDesc = row.querySelector('.task-description').value;
+    var newPrio = row.querySelector('.edit-priority').value;
+
+    api('update', {
+        id: taskId,
+        task: newTaskName,
+        description: newDesc,
+        priority: newPrio
+    }).then(function(res) {
+        if (res.error) {
+            alert(res.error);
+        } else {
+            loadTaskList(); // Päivitetään lista onnistumisen jälkeen
+        }
     });
 }
 
@@ -184,12 +262,12 @@ function addTask(){
     }).then(function(){
         inputBox.value = '';
         descriptionBox.value = '';
-        priorityBox.value = 'medium'; // Reset to default
-        loadTaskList();          // refresh
+        priorityBox.value = 'medium';
+        loadTaskList();
     });
 }
 
-/* ----------  UPDATE (toggle)  ---------- */
+/* ----------  UPDATE (Status)  ---------- */
 function toggleTaskCompletion(taskId, isNowChecked){
     var completedFlag = isNowChecked ? 1 : 0;
     api('update', {id: taskId, completed: completedFlag}).then(loadTaskList);
@@ -201,7 +279,7 @@ function deleteTaskById(taskId){
     api('delete', {id: taskId}).then(loadTaskList);
 }
 
-/* ----------  basic HTML escape  ---------- */
+/* ----------  HTML Escape  ---------- */
 function escapeHtml(rawStr){
     var tempDiv = document.createElement('div');
     tempDiv.textContent = rawStr;

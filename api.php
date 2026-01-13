@@ -68,17 +68,31 @@ elseif ($action === 'create' && isset($input['task'])) {
     send(['id' => $id, 'task' => $task, 'description' => $description, 'priority' => $priority, 'completed' => 0]);
 }
 
-// =====================  UPDATE  (toggle completed)  =====================
-elseif ($action === 'update' && isset($input['id'], $input['completed'])) {
+// =====================  UPDATE (status or content)  =====================
+elseif ($action === 'update' && isset($input['id'])) {
     requireLogin();
-    $uid  = $_SESSION['uid'];
-    $id   = (int)$input['id'];
-    $comp = (int)$input['completed'];           // 0 or 1
-     /* Make sure user can only touch their rows (AND user_id = ?) */
-    $stmt = $conn->prepare("UPDATE tasks 
-                            SET completed = ? 
-                            WHERE id = ? AND user_id = ?");
-    $stmt->bind_param('iii', $comp, $id, $uid);
+    $uid = $_SESSION['uid'];
+    $id  = (int)$input['id'];
+
+    if (isset($input['completed'])) {
+        // Alkuperäinen valmiustilan vaihto
+        $comp = (int)$input['completed'];
+        $stmt = $conn->prepare("UPDATE tasks SET completed = ? WHERE id = ? AND user_id = ?");
+        $stmt->bind_param('iii', $comp, $id, $uid);
+    } else {
+        // UUSI: Tehtävän sisällön muokkaus
+        $task = trim($input['task'] ?? '');
+        $description = trim($input['description'] ?? '');
+        $priority = $input['priority'] ?? 'medium';
+
+        if ($task === '') {
+            send(['error' => 'Task name cannot be empty'], 400);
+        }
+
+        $stmt = $conn->prepare("UPDATE tasks SET task = ?, description = ?, priority = ? WHERE id = ? AND user_id = ?");
+        $stmt->bind_param('sssii', $task, $description, $priority, $id, $uid);
+    }
+
     $stmt->execute();
     send(['success' => true]);
 }
