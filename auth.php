@@ -8,14 +8,13 @@
 
 /* Start or resume the user’s session (must be FIRST output) */
 
-// auth.php sisällä
 session_start([
-    'cookie_httponly' => true, // Estää JS-pääsyn evästeisiin (suojaa XSS-hyökkäyksiltä)
-    'cookie_secure' => true,   // Vaatii HTTPS-yhteyden
+    'cookie_httponly' => true, // Prevents JS access to cookies (protects against XSS)
+    'cookie_secure' => true,   // Requires HTTPS connection
     'cookie_samesite' => 'Strict'
 ]);
 
-session_regenerate_id(true); // Estää Session Fixation -hyökkäykset
+session_regenerate_id(true); // Prevents Session Fixation attacks
 
 
 require_once 'config.php';             // re-use the same $conn

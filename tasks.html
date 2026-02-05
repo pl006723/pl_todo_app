@@ -40,7 +40,7 @@
 
 <script>
 /* =========================================================
-  Plain-JS CRUD - Päivitetty muokkaustoiminnoilla
+  Plain-JS CRUD
    ========================================================= */
 
 const api = function(action, payload) {
@@ -60,34 +60,34 @@ const api = function(action, payload) {
     });
 };
 
-/* ----------  Sivun alustus  ---------- */
+/* ----------  Initialization  ---------- */
 document.addEventListener('DOMContentLoaded', function(){
     checkLogin();
 });
 
 function checkLogin(){
     api('whoami').then(function(user){
-        if (user.guest){                // Ei kirjautunut
+        if (user.guest){                // Not logged in
             location.href = 'index.html';
             return;
         }
         document.getElementById('greet').textContent = 'Hello, ' + user.username;
-        loadTaskList();                 // Haetaan tehtävät
+        loadTaskList();                 // Fetch tasks
     });
 }
 
-/* ----------  Kirjaudu ulos  ---------- */
+/* ----------  Logout  ---------- */
 document.getElementById('btnOut').onclick = function(){
     api('logout').then(function(){
         location.href = 'index.html';
     });
 };
 
-/* ----------  READ (Haku ja listan rakennus)  ---------- */
+/* ----------  READ (Fetch and build list)  ---------- */
 function loadTaskList(){
     api('read').then(function(taskArray){
         var taskList = document.getElementById('taskList');
-        taskList.innerHTML = ''; // Tyhjennetään lista
+        taskList.innerHTML = ''; // Clear list
         
         for (var idx = 0; idx < taskArray.length; idx++) {
             var taskObj = taskArray[idx];
@@ -96,16 +96,16 @@ function loadTaskList(){
             var taskDescription = taskObj.description ? escapeHtml(taskObj.description) : '';
             var taskPriority = taskObj.priority ? escapeHtml(taskObj.priority) : 'medium';
 
-            // Luodaan li-elementti
+            // Create li-element
             var li = document.createElement('li');
             li.id = 'row-' + taskId;
             if (taskObj.completed) li.classList.add('completed');
 
-            // Luodaan task-card div
+            // Create task-card div
             var taskCard = document.createElement('div');
             taskCard.classList.add('task-card');
 
-            // --- HEADER (Checkbox, Nimi/Input, Edit, Delete) ---
+            // --- HEADER (Checkbox, Name/Input, Edit, Delete) ---
             var taskHeader = document.createElement('div');
             taskHeader.classList.add('task-header');
 
@@ -114,12 +114,12 @@ function loadTaskList(){
             if (taskObj.completed) checkbox.checked = true;
             checkbox.setAttribute('onchange', 'toggleTaskCompletion(' + taskId + ', this.checked)');
 
-            // Tehtävän nimi (normaalitila)
+            // Task name (normal state)
             var taskTextSpan = document.createElement('span');
             taskTextSpan.classList.add('task-text');
             taskTextSpan.textContent = taskText;
 
-            // Muokkauspainike (Kynä)
+            // Editbutton (Pen)
             var editBtn = document.createElement('button');
             editBtn.textContent = '✎';
             editBtn.classList.add('edit-btn');
@@ -137,22 +137,22 @@ function loadTaskList(){
             taskHeader.appendChild(editBtn);
             taskHeader.appendChild(deleteSpan);
 
-            // --- MUOKKAUSKENTÄT (Piilossa oletuksena) ---
+            // --- EDIT FIELDS (Hidden by default) ---
             
-            // Nimen muokkaus-input
+            // Edit name-input
             var nameInput = document.createElement('input');
             nameInput.type = 'text';
             nameInput.value = taskObj.task;
             nameInput.classList.add('edit-name');
             nameInput.style.display = 'none';
 
-            // Kuvaus (textarea)
+            // Description (textarea)
             var descriptionTextarea = document.createElement('textarea');
             descriptionTextarea.classList.add('task-description');
             descriptionTextarea.readOnly = true; 
             descriptionTextarea.textContent = taskObj.description || '';
 
-            // Prioriteetin muokkaus (select)
+            // Edit Priority (select)
             var prioritySelect = document.createElement('select');
             prioritySelect.classList.add('edit-priority');
             prioritySelect.style.display = 'none';
@@ -164,7 +164,7 @@ function loadTaskList(){
                 prioritySelect.appendChild(opt);
             });
 
-            // Prioriteetin näyttö (normaalitila)
+            // Show priority (normal state)
             var priorityWrapper = document.createElement('div');
             priorityWrapper.classList.add('task-priority-wrapper');
             var priorityP = document.createElement('p');
@@ -172,7 +172,7 @@ function loadTaskList(){
             priorityP.textContent = taskPriority.charAt(0).toUpperCase() + taskPriority.slice(1);
             priorityWrapper.appendChild(priorityP);
 
-            // Tallenna-painike
+            // Save-Button
             var saveBtn = document.createElement('button');
             saveBtn.textContent = 'Save';
             saveBtn.classList.add('save-btn');
@@ -181,7 +181,7 @@ function loadTaskList(){
                 return function() { saveTaskEdits(id); };
             })(taskId);
 
-            // Kootaan kortti
+            // Create Card
             taskCard.appendChild(taskHeader);
             taskCard.appendChild(nameInput);
             taskCard.appendChild(descriptionTextarea);
@@ -195,7 +195,7 @@ function loadTaskList(){
     });
 }
 
-/* ----------  MUOKKAUSTILAN VAIHTO  ---------- */
+/* ----------  CHANGE TO EDITING FORM  ---------- */
 function toggleEditMode(taskId) {
     var row = document.getElementById('row-' + taskId);
     var desc = row.querySelector('.task-description');
@@ -206,7 +206,7 @@ function toggleEditMode(taskId) {
     var saveBtn = row.querySelector('.save-btn');
     var editBtn = row.querySelector('.edit-btn');
 
-    var isEditing = desc.readOnly; // Jos readOnly on true, ollaan siirtymässä muokkaukseen
+    var isEditing = desc.readOnly; // If readOnly is true, we are moving to edit mode
     
     desc.readOnly = !isEditing;
     desc.classList.toggle('editing');
@@ -217,10 +217,10 @@ function toggleEditMode(taskId) {
     prioWrapper.style.display = isEditing ? 'none' : 'block';
     saveBtn.style.display = isEditing ? 'inline-block' : 'none';
     
-    editBtn.textContent = isEditing ? '✕' : '✎'; // Peruuta-merkki tai kynä
+    editBtn.textContent = isEditing ? '✕' : '✎'; // Cancel or pen icon
 }
 
-/* ----------  TALLENNUS  ---------- */
+/* ----------  SAVE  ---------- */
 function saveTaskEdits(taskId) {
     var row = document.getElementById('row-' + taskId);
     var newTaskName = row.querySelector('.edit-name').value;
@@ -236,7 +236,7 @@ function saveTaskEdits(taskId) {
         if (res.error) {
             alert(res.error);
         } else {
-            loadTaskList(); // Päivitetään lista onnistumisen jälkeen
+            loadTaskList(); // UPDATE list after success
         }
     });
 }

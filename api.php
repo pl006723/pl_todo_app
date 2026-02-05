@@ -75,12 +75,12 @@ elseif ($action === 'update' && isset($input['id'])) {
     $id  = (int)$input['id'];
 
     if (isset($input['completed'])) {
-        // Alkuperäinen valmiustilan vaihto
+        // Original functionality: Toggle completion status
         $comp = (int)$input['completed'];
         $stmt = $conn->prepare("UPDATE tasks SET completed = ? WHERE id = ? AND user_id = ?");
         $stmt->bind_param('iii', $comp, $id, $uid);
     } else {
-        // UUSI: Tehtävän sisällön muokkaus
+        // NEW: Edit task content
         $task = trim($input['task'] ?? '');
         $description = trim($input['description'] ?? '');
         $priority = $input['priority'] ?? 'medium';

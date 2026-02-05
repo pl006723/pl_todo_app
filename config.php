@@ -6,7 +6,7 @@
  *          other PHP script can simply “require_once”.
  * ------------------------------------------------------------------ */
 
-/* Luetaan tietokantatiedot ympäristömuuttujista (Railwayn tarjoamat) */
+/* Read database credentials from environment variables (provided by Railway) */
 $host = getenv('MYSQLHOST')     ?: 'localhost';
 $user = getenv('MYSQLUSER')     ?: 'root';
 $pass = getenv('MYSQLPASSWORD') ?: '';
